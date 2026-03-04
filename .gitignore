@@ -1,0 +1,16 @@
+# music-studio (Electron)
+packages/music-studio/node_modules/
+packages/music-studio/out/
+packages/music-studio/.vite/
+
+# youtube-mcp (Node.js)
+packages/youtube-mcp/node_modules/
+packages/youtube-mcp/dist/
+
+# music-video-creator (Python)
+packages/music-video-creator/.venv/
+packages/music-video-creator/__pycache__/
+packages/music-video-creator/*.pyc
+
+# macOS
+.DS_Store

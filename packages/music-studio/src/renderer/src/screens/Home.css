@@ -1,0 +1,36 @@
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 40px;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.home-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.home-card {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+.home-card:hover {
+  border-color: #7c6af5;
+  background: #242424;
+}
+
+.card-icon { font-size: 28px; margin-bottom: 8px; }
+.card-title { font-size: 17px; font-weight: 600; color: #e0e0e0; margin-bottom: 4px; }
+.card-desc { font-size: 13px; color: #888; line-height: 1.4; }

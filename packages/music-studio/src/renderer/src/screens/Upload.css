@@ -1,0 +1,59 @@
+.upload-screen {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 20px; padding: 40px; height: 100vh;
+  box-sizing: border-box;
+}
+h2 { margin: 0; color: #e0e0e0; }
+
+.back-btn {
+  align-self: flex-start;
+  background: none; border: none; color: #888; cursor: pointer;
+  font-size: 13px; padding: 0; margin-bottom: -12px;
+}
+.back-btn:hover { color: #e0e0e0; }
+
+.folder-picker {
+  width: 100%; max-width: 480px;
+  border: 2px dashed #555; border-radius: 12px;
+  padding: 20px; text-align: center;
+  color: #888; font-size: 14px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.folder-picker.dragging { border-color: #7c6af5; background: rgba(124,106,245,0.08); }
+.folder-picker.has-folder { border-style: solid; border-color: #555; }
+.folder-selected { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.folder-selected .folder-name { font-weight: 600; color: #e0e0e0; }
+.link-btn { background: none; border: none; color: #7c6af5; cursor: pointer; font-size: 13px; padding: 0; }
+.link-btn:hover { text-decoration: underline; }
+.video-info { color: #888; font-size: 13px; display: flex; gap: 8px; }
+.field { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 480px; }
+.field label { font-size: 12px; color: #888; }
+.field input {
+  background: #1e1e1e; border: 1px solid #444; color: #e0e0e0;
+  padding: 10px 14px; border-radius: 8px; font-size: 14px;
+}
+.field input:focus { outline: none; border-color: #7c6af5; }
+.primary-btn {
+  background: #7c6af5; color: white; border: none;
+  padding: 12px 32px; border-radius: 8px; font-size: 15px; cursor: pointer;
+  width: 100%; max-width: 480px;
+}
+.primary-btn:hover:not(:disabled) { background: #6b5ae0; }
+.primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.done-panel { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.checkmark { font-size: 48px; color: #6fcf97; }
+.yt-link { color: #7c6af5; cursor: pointer; font-size: 15px; }
+.yt-link:hover { text-decoration: underline; }
+.hint { color: #666; font-size: 12px; text-align: center; margin: 0; }
+.uploading-panel { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.spinner {
+  width: 36px; height: 36px; border: 3px solid #333; border-top-color: #7c6af5;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-box {
+  background: #1e0a0a; border: 1px solid #7b2828; color: #eb5757;
+  padding: 12px; border-radius: 8px; font-size: 12px;
+  white-space: pre-wrap; max-height: 200px; overflow: auto;
+  width: 100%; max-width: 480px; margin: 0;
+}
