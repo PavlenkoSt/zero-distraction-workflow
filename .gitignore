@@ -14,3 +14,4 @@ packages/music-video-creator/*.pyc
 
 # macOS
 .DS_Store
+CLAUDE.md
