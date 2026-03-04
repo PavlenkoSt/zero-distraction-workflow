@@ -73,7 +73,7 @@ ipcMain.handle('select-folder', async () => {
 })
 
 ipcMain.handle('get-default-output-path', async () => {
-  return path.join(os.homedir(), 'Desktop', 'Music')
+  return path.join(os.homedir(), 'Desktop', 'zero-distraction-workflow', 'generated-video')
 })
 
 ipcMain.handle('open-path', async (_event, filePath: string) => {
