@@ -236,6 +236,40 @@ ipcMain.handle(
   }
 )
 
+ipcMain.handle('publish-shorts', async (_event, directory: string) => {
+  await callMcpTool('node', [YOUTUBE_MCP_SCRIPT], YOUTUBE_MCP_DIR, 'authenticate', {})
+
+  const text = await callMcpTool(
+    'node',
+    [YOUTUBE_MCP_SCRIPT],
+    YOUTUBE_MCP_DIR,
+    'publish_shorts',
+    { directory }
+  )
+
+  const summaryMatch = text.match(/\*\*(\d+) processed, (\d+) succeeded, (\d+) failed\*\*/)
+  const total = summaryMatch ? parseInt(summaryMatch[1]) : 0
+  const succeeded = summaryMatch ? parseInt(summaryMatch[2]) : 0
+  const failed = summaryMatch ? parseInt(summaryMatch[3]) : 0
+
+  if (!total) throw new Error(`Publish shorts failed:\n${text}`)
+
+  const results: Array<{ filename: string; videoId?: string; studioUrl?: string; error?: string }> = []
+  for (const line of text.split('\n')) {
+    const successMatch = line.match(/^[•·]\s+(.+\.mp4)\s+→\s+(https:\/\/studio\.youtube\.com\/video\/([A-Za-z0-9_-]+)\/edit)/)
+    if (successMatch) {
+      results.push({ filename: successMatch[1], videoId: successMatch[3], studioUrl: successMatch[2] })
+      continue
+    }
+    const failMatch = line.match(/^[•·]\s+(.+\.mp4)\s+→\s+FAILED:\s+(.+)/)
+    if (failMatch) {
+      results.push({ filename: failMatch[1], error: failMatch[2] })
+    }
+  }
+
+  return { total, succeeded, failed, results }
+})
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
