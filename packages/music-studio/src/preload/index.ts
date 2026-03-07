@@ -20,6 +20,19 @@ export type UploadResult = {
   url: string
 }
 
+export type ShortsGenerateResult = {
+  outputPath: string
+  count: number
+  files: Array<{ video: string; metadata: string }>
+}
+
+export type ShortsUploadResult = {
+  total: number
+  succeeded: number
+  failed: number
+  results: Array<{ filename: string; videoId?: string; studioUrl?: string; error?: string }>
+}
+
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFolder: (folderPath: string): Promise<ScanResult> =>
     ipcRenderer.invoke('scan-folder', folderPath),
@@ -41,6 +54,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   cancelGenerate: (): Promise<void> =>
     ipcRenderer.invoke('cancel-generate'),
+
+  generateShorts: (folderPath: string, outputPath: string, thematicText: string): Promise<ShortsGenerateResult> =>
+    ipcRenderer.invoke('generate-shorts', folderPath, outputPath, thematicText),
+
+  publishShorts: (directory: string): Promise<ShortsUploadResult> =>
+    ipcRenderer.invoke('publish-shorts', directory),
 
   getPathForFile: (file: File): string =>
     webUtils.getPathForFile(file),

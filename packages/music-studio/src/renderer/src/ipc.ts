@@ -18,6 +18,19 @@ export type UploadResult = {
   url: string
 }
 
+export type ShortsGenerateResult = {
+  outputPath: string
+  count: number
+  files: Array<{ video: string; metadata: string }>
+}
+
+export type ShortsUploadResult = {
+  total: number
+  succeeded: number
+  failed: number
+  results: Array<{ filename: string; videoId?: string; studioUrl?: string; error?: string }>
+}
+
 declare global {
   interface Window {
     electronAPI: {
@@ -30,6 +43,8 @@ declare global {
       getDefaultOutputPath(): Promise<string>
       getPathForFile(file: File): string
       selectFolder(): Promise<string | null>
+      generateShorts(folderPath: string, outputPath: string, thematicText: string): Promise<ShortsGenerateResult>
+      publishShorts(directory: string): Promise<ShortsUploadResult>
     }
   }
 }
