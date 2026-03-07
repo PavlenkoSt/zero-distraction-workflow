@@ -4,13 +4,15 @@ import type { ScanResult } from '../ipc'
 import './DropZone.css'
 
 type Props = {
-  onGenerate: (folderPath: string, outputPath: string) => void
+  mode: 'video' | 'shorts'
+  onGenerate: (folderPath: string, outputPath: string, thematicText: string) => void
   onBack: () => void
 }
 
-export function DropZone({ onGenerate, onBack }: Props) {
+export function DropZone({ mode, onGenerate, onBack }: Props) {
   const [scan, setScan] = useState<ScanResult | null>(null)
   const [outputPath, setOutputPath] = useState('')
+  const [thematicText, setThematicText] = useState('')
   const [error, setError] = useState('')
   const [dragging, setDragging] = useState(false)
 
@@ -43,10 +45,15 @@ export function DropZone({ onGenerate, onBack }: Props) {
     if (folderPath) scanPath(folderPath)
   }, [scanPath])
 
+  const isReady = scan && scan.hasImage && !!outputPath && (mode === 'video' || !!thematicText.trim())
+
+  const title = mode === 'shorts' ? 'Generate Shorts' : 'Render Video'
+  const buttonLabel = mode === 'shorts' ? 'Generate Shorts' : 'Generate Video'
+
   return (
     <div className="dropzone-screen">
       <button className="back-btn" onClick={onBack}>← Back</button>
-      <h1>Render Video</h1>
+      <h1>{title}</h1>
 
       <div
         className={`drop-target ${dragging ? 'dragging' : ''} ${scan ? 'has-scan' : ''}`}
@@ -89,12 +96,24 @@ export function DropZone({ onGenerate, onBack }: Props) {
         />
       </div>
 
+      {mode === 'shorts' && (
+        <div className="output-row">
+          <label>Thematic text</label>
+          <input
+            type="text"
+            value={thematicText}
+            onChange={e => setThematicText(e.target.value)}
+            placeholder="e.g. lofi ambient focus music for deep work"
+          />
+        </div>
+      )}
+
       <button
         className="primary-btn"
-        disabled={!scan || !scan.hasImage || !outputPath}
-        onClick={() => scan && onGenerate(scan.folderPath, outputPath)}
+        disabled={!isReady}
+        onClick={() => scan && onGenerate(scan.folderPath, outputPath, thematicText)}
       >
-        Generate Video
+        {buttonLabel}
       </button>
     </div>
   )
