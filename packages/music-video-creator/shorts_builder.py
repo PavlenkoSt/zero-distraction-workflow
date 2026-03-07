@@ -26,45 +26,26 @@ def slugify_track_name(name: str) -> str:
     return re.sub(r"\s+", "-", name.strip()).lower()
 
 
-def build_typing_filter(text: str, duration: float) -> str:
-    """Build FFmpeg drawtext filter for character-by-character typing animation.
+def build_text_filter(text: str) -> str:
+    """Build FFmpeg filter for centered text with 1s fade-in, then static.
 
-    Characters appear evenly across the first 60% of duration, then hold.
-    White text, centered vertically and horizontally.
+    Adds a full-screen black overlay at 0.2 opacity for text readability,
+    then draws white text centered on screen.
     """
-    typing_duration = duration * 0.6
-    char_count = len(text)
-    if char_count == 0:
+    if not text:
         return ""
 
-    char_interval = typing_duration / char_count
+    escaped = text.replace("'", "'\\''").replace(":", "\\:").replace("%", "%%")
 
-    escaped_text = text.replace("'", "'\\''").replace(":", "\\:").replace("%", "%%")
-    filters = []
-
-    for i in range(1, char_count + 1):
-        partial = text[:i]
-        escaped_partial = partial.replace("'", "'\\''").replace(":", "\\:").replace("%", "%%")
-        t_start = (i - 1) * char_interval
-        t_end = i * char_interval if i < char_count else duration
-
-        filters.append(
-            f"drawtext=text='{escaped_partial}'"
-            f":fontsize=52:fontcolor=white:fontfile=/System/Library/Fonts/Helvetica.ttc"
-            f":x=(w-text_w)/2:y=(h-text_h)/2"
-            f":enable='between(t,{t_start:.3f},{t_end:.3f})'"
-        )
-
-    # Final hold: show complete text for remaining duration
-    escaped_full = text.replace("'", "'\\''").replace(":", "\\:").replace("%", "%%")
-    filters.append(
-        f"drawtext=text='{escaped_full}'"
+    overlay = "drawbox=x=0:y=0:w=iw:h=ih:color=black@0.2:t=fill"
+    text_filter = (
+        f"drawtext=text='{escaped}'"
         f":fontsize=52:fontcolor=white:fontfile=/System/Library/Fonts/Helvetica.ttc"
         f":x=(w-text_w)/2:y=(h-text_h)/2"
-        f":enable='gte(t,{typing_duration:.3f})'"
+        f":alpha='if(lt(t,1),t,1)'"
     )
 
-    return ",".join(filters)
+    return overlay + "," + text_filter
 
 
 def build_metadata_text(track_name: str, hook: str, thematic_text: str) -> str:
@@ -109,15 +90,15 @@ def render_short(
     filename = f"{track.index}-{slug}.mp4"
     video_path = os.path.join(output_path, filename)
 
-    typing_filter = build_typing_filter(hook, SHORTS_DURATION)
+    text_filter = build_text_filter(hook)
 
     vf = (
         f"scale={SHORTS_WIDTH}:{SHORTS_HEIGHT}:force_original_aspect_ratio=increase,"
         f"crop={SHORTS_WIDTH}:{SHORTS_HEIGHT},"
         f"setsar=1"
     )
-    if typing_filter:
-        vf += "," + typing_filter
+    if text_filter:
+        vf += "," + text_filter
 
     log_fn(f"Rendering short: {filename} — \"{hook}\"")
 
@@ -125,12 +106,12 @@ def render_short(
         "ffmpeg", "-y",
         "-loop", "1", "-i", image_path,
         "-i", track.path,
+        "-map", "0:v", "-map", "1:a",
         "-vf", vf,
         "-c:v", "libx264", "-preset", "medium", "-crf", "18",
         "-r", "30", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "256k", "-ar", "48000", "-ac", "2",
         "-t", str(SHORTS_DURATION),
-        "-movflags", "+faststart",
         video_path,
     ]
 
