@@ -158,7 +158,7 @@ ipcMain.handle('generate-video', async (_event, folderPath: string, outputPath: 
   return { videoPath, csvPath, duration, trackCount }
 })
 
-ipcMain.handle('generate-shorts', async (_event, folderPath: string, outputPath: string, thematicText: string) => {
+ipcMain.handle('generate-shorts', async (_event, folderPath: string, outputPath: string, trackTexts: string[]) => {
   fs.mkdirSync(outputPath, { recursive: true })
 
   const client = new Client({ name: 'music-studio', version: '1.0.0' })
@@ -175,7 +175,7 @@ ipcMain.handle('generate-shorts', async (_event, folderPath: string, outputPath:
     const result = await client.callTool(
       {
         name: 'create_shorts',
-        arguments: { folder_path: folderPath, output_path: outputPath, thematic_text: thematicText }
+        arguments: { folder_path: folderPath, output_path: outputPath, track_texts: JSON.stringify(trackTexts) }
       },
       undefined,
       { timeout: 30 * 60 * 1000 }

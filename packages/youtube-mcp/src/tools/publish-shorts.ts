@@ -40,6 +40,43 @@ function discoverShorts(directory: string): ShortFile[] {
   return shorts;
 }
 
+interface ParsedMetadata {
+  title: string;
+  description: string;
+  tags: string[];
+}
+
+function parseMetadataFile(txtPath: string): ParsedMetadata | null {
+  if (!fs.existsSync(txtPath)) return null;
+
+  const content = fs.readFileSync(txtPath, "utf-8");
+  const lines = content.split("\n");
+
+  let title = "";
+  const descriptionLines: string[] = [];
+  let tags: string[] = [];
+  let inDescription = false;
+
+  for (const line of lines) {
+    if (line.startsWith("Title: ")) {
+      title = line.slice(7).trim();
+      inDescription = false;
+    } else if (line.startsWith("Description: ")) {
+      descriptionLines.push(line.slice(13).trim());
+      inDescription = true;
+    } else if (line.startsWith("Tags: ")) {
+      tags = line.slice(6).split(",").map((t) => t.trim()).filter(Boolean);
+      inDescription = false;
+    } else if (inDescription) {
+      descriptionLines.push(line);
+    }
+  }
+
+  const description = descriptionLines.join("\n").trim();
+  if (!title) return null;
+  return { title, description, tags };
+}
+
 export function registerPublishShortsTool(server: McpServer): void {
   server.tool(
     "publish_shorts",
@@ -85,7 +122,11 @@ export function registerPublishShortsTool(server: McpServer): void {
           log.push(`\nUploading ${short.filename}...`);
 
           try {
-            const metadata = generateShortsMetadata(short.keyword);
+            const txtPath = short.filePath.replace(/\.mp4$/i, ".txt");
+            const parsed = parseMetadataFile(txtPath);
+            const metadata = parsed
+              ? { ...parsed, categoryId: "10" }
+              : generateShortsMetadata(short.keyword);
 
             const response = await youtube.videos.insert({
               part: ["snippet", "status"],

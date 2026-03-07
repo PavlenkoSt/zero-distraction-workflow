@@ -43,7 +43,7 @@ declare global {
       getDefaultOutputPath(): Promise<string>
       getPathForFile(file: File): string
       selectFolder(): Promise<string | null>
-      generateShorts(folderPath: string, outputPath: string, thematicText: string): Promise<ShortsGenerateResult>
+      generateShorts(folderPath: string, outputPath: string, trackTexts: string[]): Promise<ShortsGenerateResult>
       publishShorts(directory: string): Promise<ShortsUploadResult>
     }
   }

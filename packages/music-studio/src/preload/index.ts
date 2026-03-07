@@ -55,8 +55,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   cancelGenerate: (): Promise<void> =>
     ipcRenderer.invoke('cancel-generate'),
 
-  generateShorts: (folderPath: string, outputPath: string, thematicText: string): Promise<ShortsGenerateResult> =>
-    ipcRenderer.invoke('generate-shorts', folderPath, outputPath, thematicText),
+  generateShorts: (folderPath: string, outputPath: string, trackTexts: string[]): Promise<ShortsGenerateResult> =>
+    ipcRenderer.invoke('generate-shorts', folderPath, outputPath, trackTexts),
 
   publishShorts: (directory: string): Promise<ShortsUploadResult> =>
     ipcRenderer.invoke('publish-shorts', directory),

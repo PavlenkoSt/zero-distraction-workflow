@@ -5,14 +5,14 @@ import './DropZone.css'
 
 type Props = {
   mode: 'video' | 'shorts'
-  onGenerate: (folderPath: string, outputPath: string, thematicText: string) => void
+  onGenerate: (folderPath: string, outputPath: string, trackTexts: string[]) => void
   onBack: () => void
 }
 
 export function DropZone({ mode, onGenerate, onBack }: Props) {
   const [scan, setScan] = useState<ScanResult | null>(null)
   const [outputPath, setOutputPath] = useState('')
-  const [thematicText, setThematicText] = useState('')
+  const [trackTexts, setTrackTexts] = useState<string[]>([])
   const [error, setError] = useState('')
   const [dragging, setDragging] = useState(false)
 
@@ -25,10 +25,13 @@ export function DropZone({ mode, onGenerate, onBack }: Props) {
     try {
       const result = await api.scanFolder(filePath)
       setScan(result)
+      if (mode === 'shorts') {
+        setTrackTexts(result.audioFiles.map(() => ''))
+      }
     } catch (err) {
       setError(String(err))
     }
-  }, [])
+  }, [mode])
 
   const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault()
@@ -45,7 +48,8 @@ export function DropZone({ mode, onGenerate, onBack }: Props) {
     if (folderPath) scanPath(folderPath)
   }, [scanPath])
 
-  const isReady = scan && scan.hasImage && !!outputPath && (mode === 'video' || !!thematicText.trim())
+  const isReady = scan && scan.hasImage && !!outputPath &&
+    (mode === 'video' || (trackTexts.length > 0 && trackTexts.every(t => t.trim())))
 
   const title = mode === 'shorts' ? 'Generate Shorts' : 'Render Video'
   const buttonLabel = mode === 'shorts' ? 'Generate Shorts' : 'Generate Video'
@@ -96,22 +100,34 @@ export function DropZone({ mode, onGenerate, onBack }: Props) {
         />
       </div>
 
-      {mode === 'shorts' && (
-        <div className="output-row">
-          <label>Thematic text</label>
-          <input
-            type="text"
-            value={thematicText}
-            onChange={e => setThematicText(e.target.value)}
-            placeholder="e.g. lofi ambient focus music for deep work"
-          />
+      {mode === 'shorts' && scan && scan.audioFiles.length > 0 && (
+        <div className="track-texts">
+          <label className="track-texts-label">Text for each short</label>
+          {scan.audioFiles.map((file, i) => {
+            const name = file.replace(/^\d+-/, '').replace(/\.[^.]+$/, '').replace(/-/g, ' ')
+            return (
+              <div key={i} className="track-text-row">
+                <span className="track-text-name">{name}</span>
+                <input
+                  type="text"
+                  value={trackTexts[i] ?? ''}
+                  onChange={e => {
+                    const updated = [...trackTexts]
+                    updated[i] = e.target.value
+                    setTrackTexts(updated)
+                  }}
+                  placeholder="e.g. Deep focus mode"
+                />
+              </div>
+            )
+          })}
         </div>
       )}
 
       <button
         className="primary-btn"
         disabled={!isReady}
-        onClick={() => scan && onGenerate(scan.folderPath, outputPath, thematicText)}
+        onClick={() => scan && onGenerate(scan.folderPath, outputPath, trackTexts)}
       >
         {buttonLabel}
       </button>

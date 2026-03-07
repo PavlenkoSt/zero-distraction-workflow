@@ -6,11 +6,11 @@ import './ShortsGenerating.css'
 type Props = {
   folderPath: string
   outputPath: string
-  thematicText: string
+  trackTexts: string[]
   onBack: () => void
 }
 
-export function ShortsGenerating({ folderPath, outputPath, thematicText, onBack }: Props) {
+export function ShortsGenerating({ folderPath, outputPath, trackTexts, onBack }: Props) {
   const [result, setResult] = useState<ShortsGenerateResult | null>(null)
   const [error, setError] = useState('')
   const [elapsed, setElapsed] = useState(0)
@@ -23,7 +23,7 @@ export function ShortsGenerating({ folderPath, outputPath, thematicText, onBack 
       setElapsed(Math.floor((Date.now() - startRef.current) / 1000))
     }, 1000)
 
-    api.generateShorts(folderPath, outputPath, thematicText)
+    api.generateShorts(folderPath, outputPath, trackTexts)
       .then(r => {
         clearInterval(timerRef.current!)
         setResult(r)

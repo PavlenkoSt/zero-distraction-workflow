@@ -4,8 +4,9 @@
   align-items: center;
   gap: 20px;
   padding: 40px;
-  height: 100vh;
+  min-height: 100vh;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 h1 { margin: 0; font-size: 24px; color: #e0e0e0; }
@@ -19,7 +20,8 @@ h1 { margin: 0; font-size: 24px; color: #e0e0e0; }
 
 .drop-target {
   width: 100%;
-  flex: 1;
+  flex: 0 0 auto;
+  min-height: 120px;
   border: 2px dashed #555;
   border-radius: 12px;
   display: flex;
@@ -48,6 +50,18 @@ h1 { margin: 0; font-size: 24px; color: #e0e0e0; }
 .output-row input {
   flex: 1; background: #1e1e1e; border: 1px solid #444;
   color: #e0e0e0; padding: 8px 12px; border-radius: 6px; font-size: 13px;
+}
+
+.track-texts { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.track-texts-label { font-size: 13px; color: #888; }
+.track-text-row { display: flex; align-items: center; gap: 10px; }
+.track-text-name {
+  font-size: 12px; color: #888; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; min-width: 100px; max-width: 140px; flex-shrink: 0;
+}
+.track-text-row input {
+  flex: 1; background: #1e1e1e; border: 1px solid #444;
+  color: #e0e0e0; padding: 7px 10px; border-radius: 6px; font-size: 13px;
 }
 
 .primary-btn {

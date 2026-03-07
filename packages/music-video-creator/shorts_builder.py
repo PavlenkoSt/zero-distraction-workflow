@@ -123,8 +123,17 @@ def render_short(
     return video_path
 
 
-def build_shorts(folder_path: str, output_path: str, thematic_text: str, log_fn=print) -> dict:
-    """Full pipeline: parse folder -> match hooks -> render shorts -> write metadata."""
+def build_shorts(
+    folder_path: str,
+    output_path: str,
+    track_texts: list[str] | None = None,
+    log_fn=print,
+) -> dict:
+    """Full pipeline: parse folder -> assign text -> render shorts -> write metadata.
+
+    track_texts: per-track overlay texts (positional, matched by order).
+    If a text is empty or missing, falls back to auto-matched hook from hooks.json.
+    """
     for tool in ["ffmpeg", "ffprobe"]:
         result = subprocess.run(["which", tool], capture_output=True)
         if result.returncode != 0:
@@ -137,21 +146,31 @@ def build_shorts(folder_path: str, output_path: str, thematic_text: str, log_fn=
     log_fn(f"Found image: {os.path.basename(image_path)}")
     log_fn(f"Found {len(tracks)} tracks")
 
-    log_fn("Matching hooks to tracks...")
-    hooks = load_hooks()
-    matched = match_hooks_to_tracks(hooks, tracks, thematic_text)
+    # Determine overlay text per track: use provided text, fall back to hook matching
+    provided = list(track_texts or [])
+    needs_hooks = [not (i < len(provided) and provided[i].strip()) for i in range(len(tracks))]
+
+    if any(needs_hooks):
+        log_fn("Matching hooks to tracks...")
+        hooks = load_hooks()
+        matched_hooks = match_hooks_to_tracks(hooks, tracks, "")
+        hook_by_index = {item["track"].index: item["hook"] for item in matched_hooks}
+    else:
+        hook_by_index = {}
 
     files = []
-    for item in matched:
-        track = item["track"]
-        hook = item["hook"]
+    for i, track in enumerate(tracks):
+        if i < len(provided) and provided[i].strip():
+            hook = provided[i].strip()
+        else:
+            hook = hook_by_index.get(track.index, track.name)
 
         video_path = render_short(image_path, track, hook, output_path, log_fn)
 
         slug = slugify_track_name(track.name)
         txt_filename = f"{track.index}-{slug}.txt"
         txt_path = os.path.join(output_path, txt_filename)
-        metadata = build_metadata_text(track.name, hook, thematic_text)
+        metadata = build_metadata_text(track.name, hook, "")
         with open(txt_path, "w") as f:
             f.write(metadata)
         log_fn(f"Metadata: {txt_filename}")

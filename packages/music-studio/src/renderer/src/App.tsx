@@ -14,7 +14,7 @@ type Screen =
   | { name: 'upload'; outputPath: string; result: GenerateResult }
   | { name: 'publish' }
   | { name: 'shorts-drop' }
-  | { name: 'shorts-generating'; folderPath: string; outputPath: string; thematicText: string }
+  | { name: 'shorts-generating'; folderPath: string; outputPath: string; trackTexts: string[] }
   | { name: 'publish-shorts' }
 
 export default function App() {
@@ -58,8 +58,8 @@ export default function App() {
     content = (
       <DropZone
         mode="shorts"
-        onGenerate={(folderPath, outputPath, thematicText) =>
-          setScreen({ name: 'shorts-generating', folderPath, outputPath, thematicText })
+        onGenerate={(folderPath, outputPath, trackTexts) =>
+          setScreen({ name: 'shorts-generating', folderPath, outputPath, trackTexts })
         }
         onBack={goHome}
       />
@@ -69,7 +69,7 @@ export default function App() {
       <ShortsGenerating
         folderPath={screen.folderPath}
         outputPath={screen.outputPath}
-        thematicText={screen.thematicText}
+        trackTexts={screen.trackTexts}
         onBack={goHome}
       />
     )
