@@ -3,7 +3,7 @@ import { api } from '../ipc'
 import type { ShortsUploadResult } from '../ipc'
 import './PublishShorts.css'
 
-type Status = 'idle' | 'authenticating' | 'uploading' | 'done' | 'error'
+type Status = 'idle' | 'uploading' | 'done' | 'error'
 
 type Props = {
   onBack: () => void
@@ -32,10 +32,9 @@ export function PublishShorts({ onBack }: Props) {
 
   const handlePublish = async () => {
     if (!folderPath) return
-    setStatus('authenticating')
+    setStatus('uploading')
     setError('')
     try {
-      setStatus('uploading')
       const result = await api.publishShorts(folderPath)
       setUploadResult(result)
       setStatus('done')
@@ -79,10 +78,10 @@ export function PublishShorts({ onBack }: Props) {
         </button>
       )}
 
-      {(status === 'authenticating' || status === 'uploading') && (
+      {status === 'uploading' && (
         <div className="uploading-panel">
           <div className="spinner" />
-          <p>{status === 'authenticating' ? 'Opening browser for Google sign-in…' : 'Uploading shorts…'}</p>
+          <p>Authenticating &amp; uploading shorts…</p>
         </div>
       )}
 
@@ -100,7 +99,8 @@ export function PublishShorts({ onBack }: Props) {
                 {r.studioUrl ? (
                   <a
                     className="result-link"
-                    onClick={() => api.openExternal(r.studioUrl!)}
+                    href={r.studioUrl}
+                    onClick={e => { e.preventDefault(); api.openExternal(r.studioUrl!) }}
                   >
                     Studio →
                   </a>
