@@ -158,6 +158,57 @@ ipcMain.handle('generate-video', async (_event, folderPath: string, outputPath: 
   return { videoPath, csvPath, duration, trackCount }
 })
 
+ipcMain.handle('generate-shorts', async (_event, folderPath: string, outputPath: string, thematicText: string) => {
+  fs.mkdirSync(outputPath, { recursive: true })
+
+  const client = new Client({ name: 'music-studio', version: '1.0.0' })
+  const transport = new StdioClientTransport({
+    command: VIDEO_CREATOR_PYTHON,
+    args: [VIDEO_CREATOR_SCRIPT],
+    cwd: VIDEO_CREATOR_DIR
+  })
+  activeGenerateClient = client
+  await client.connect(transport)
+
+  let text: string
+  try {
+    const result = await client.callTool(
+      {
+        name: 'create_shorts',
+        arguments: { folder_path: folderPath, output_path: outputPath, thematic_text: thematicText }
+      },
+      undefined,
+      { timeout: 30 * 60 * 1000 }
+    )
+    const content = result.content as Array<{ type: string; text: string }>
+    text = content.map((c) => c.text).join('\n')
+  } finally {
+    activeGenerateClient = null
+    await client.close().catch(() => {})
+  }
+
+  const countMatch = text.match(/Generated (\d+) shorts/)
+  const count = countMatch ? parseInt(countMatch[1]) : 0
+  if (!count) throw new Error(`Shorts generation failed:\n${text}`)
+
+  const lines = text.split('\n')
+  const files: Array<{ video: string; metadata: string }> = []
+  for (let i = 0; i < lines.length; i++) {
+    const videoMatch = lines[i].match(/^Rendered: (.+\.mp4)$/)
+    if (videoMatch) {
+      const videoFile = videoMatch[1]
+      const metaMatch = lines[i + 1]?.match(/^Metadata: (.+\.txt)$/)
+      const metaFile = metaMatch ? metaMatch[1] : videoFile.replace('.mp4', '.txt')
+      files.push({
+        video: path.join(outputPath, videoFile),
+        metadata: path.join(outputPath, metaFile),
+      })
+    }
+  }
+
+  return { outputPath, count, files }
+})
+
 const YOUTUBE_MCP_SCRIPT = '/Users/stanislavpavlenko/Desktop/zero-distraction-workflow/packages/youtube-mcp/dist/index.js'
 const YOUTUBE_MCP_DIR = '/Users/stanislavpavlenko/Desktop/zero-distraction-workflow/packages/youtube-mcp'
 
